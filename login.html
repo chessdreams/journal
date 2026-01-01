@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data:;">
+    <title>Login - SELFJournal</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 48px;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .logo span {
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .name-group {
+            display: none;
+            /* Hidden by default (for login) */
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #34495e;
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .toggle-mode {
+            text-align: center;
+            margin-top: 24px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .toggle-mode a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle-mode a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>SELFJournal</h1>
+        <div class="subtitle">Your Personal Growth Journal</div>
+
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+
+        <form id="auth-form">
+            <div class="form-group name-group" id="name-group">
+                <label for="full-name">First Name</label>
+                <input type="text" id="full-name" placeholder="Enter your first name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" minlength="6">
+            </div>
+            <button type="submit" class="btn" id="submit-btn">Sign In</button>
+        </form>
+
+        <div class="toggle-mode">
+            <span id="toggle-text">Don't have an account?</span>
+            <a href="#" id="toggle-link">Sign Up</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        // Initialize Supabase client for login page only
+        let SUPABASE_URL = '';
+        let SUPABASE_ANON_KEY = '';
+
+        if (typeof CONFIG !== 'undefined') {
+            if (CONFIG.SUPABASE_URL) SUPABASE_URL = CONFIG.SUPABASE_URL;
+            if (CONFIG.SUPABASE_ANON_KEY) SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
+        }
+
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isSignUp = false;
+        const form = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const nameInput = document.getElementById('full-name');
+        const nameGroup = document.getElementById('name-group');
+        const submitBtn = document.getElementById('submit-btn');
+        const toggleBtn = document.getElementById('toggle-link');
+        const toggleText = document.getElementById('toggle-text');
+        const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
+        const title = document.querySelector('.login-container h1');
+
+        // Helper to determine redirect target
+        function getRedirectUrl() {
+            return window.innerWidth <= 768 ? 'mobile.html' : 'index.html';
+        }
+
+        // Check if already logged in
+        sb.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                window.location.href = getRedirectUrl();
+            }
+        });
+
+        // Toggle between sign in and sign up
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (isSignUp) {
+                isSignUp = false;
+                title.textContent = 'SELFJournal'; // Changed back to original title
+                submitBtn.textContent = 'Sign In';
+                toggleText.textContent = "Don't have an account?";
+                toggleBtn.textContent = 'Sign Up';
+                nameGroup.style.display = 'none';
+                nameInput.required = false;
+            } else {
+                isSignUp = true;
+                title.textContent = 'Create Account';
+                submitBtn.textContent = 'Sign Up';
+                toggleText.textContent = 'Already have an account?';
+                toggleBtn.textContent = 'Sign In';
+                nameGroup.style.display = 'block';
+                nameInput.required = true;
+            }
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Loading...';
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            try {
+                if (isSignUp) {
+                    const { data, error } = await sb.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: nameInput.value
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    successMsg.textContent = 'Account created! You can now sign in.';
+                    successMsg.style.display = 'block';
+
+                    // Auto-switch to sign in mode
+                    setTimeout(() => {
+                        isSignUp = false;
+                        submitBtn.textContent = 'Sign In';
+                        toggleText.textContent = "Don't have an account?";
+                        toggleLink.textContent = 'Sign Up';
+                        form.reset();
+                    }, 2000);
+                } else {
+                    const { data, error } = await sb.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) throw error;
+
+                    // Redirect to main app
+                    window.location.href = getRedirectUrl();
+                }
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data:;">
+    <title>SELF - Mobile</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="light-theme mobile-view">
+    <!-- Top Mobile Header -->
+    <header class="mobile-header">
+        <div class="header-left">
+            <span class="logo-text-small">SELF</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" class="theme-btn-small">☀️</button>
+            <button id="mobile-logout-btn" class="theme-btn-small">⎋</button>
+        </div>
+    </header>
+
+    <main class="content-area mobile-content">
+        <!-- Date Navigator (Compact) -->
+        <div class="mobile-date-bar">
+            <button id="prev-date" class="date-btn">←</button>
+            <div class="date-display-wrapper">
+                <span id="date-display">Jan 1, 2026</span>
+                <input type="date" id="date-picker" class="date-picker-input">
+            </div>
+            <button id="next-date" class="date-btn">→</button>
+        </div>
+
+        <div id="main-container" class="main-container">
+            <!-- Dynamic Content Load Here -->
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item mobile-nav-item active" data-view="dashboard">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+            </svg>
+            <span>Dash</span>
+        </button>
+        <button class="nav-item mobile-nav-item" data-view="daily">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                    d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+            </svg>
+            <span>Daily</span>
+        </button>
+        <button class="nav-item mobile-nav-item" data-view="weekly">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                    d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+            <span>Week</span>
+        </button>
+        <button class="nav-item mobile-nav-item" data-view="roadmap">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" />
+            </svg>
+            <span>Goal</span>
+        </button>
+        <button class="nav-item mobile-nav-item" data-view="help">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+            </svg>
+            <span>Help</span>
+        </button>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
