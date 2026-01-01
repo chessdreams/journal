@@ -449,23 +449,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return html;
     }
 
-    function attachInputListeners() {
-        const inputs = mainContainer.querySelectorAll('textarea, input');
-        inputs.forEach(input => {
-            // Debounce save to DB
-            let timeout;
-            input.addEventListener('input', (e) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(async () => {
-                    const today = getLocalISODate(state.date);
-                    const key = e.target.dataset.key;
-                    const val = e.target.value;
-                    await window.db.saveDailyEntry(today, { [key]: val });
-                }, 500); // 500ms debounce
-            });
-        });
-    }
-
     async function loadSavedData() {
         const today = getLocalISODate(state.date);
         const data = await window.db.getDailyEntry(today);
@@ -473,9 +456,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         const inputs = mainContainer.querySelectorAll('textarea, input');
         inputs.forEach(input => {
             const key = input.dataset.key;
-            if (data[key]) {
-                input.value = data[key];
+            // Handle Schedule JSON
+            if (input.classList.contains('timeline-input')) {
+                // key is like "time_6_00". In DB it's in data.schedule["time_6_00"]
+                if (data.schedule && data.schedule[key]) {
+                    input.value = data.schedule[key];
+                }
+            } else {
+                // Determine if direct property or boolean
+                if (data[key] !== undefined) {
+                    if (input.type === 'checkbox') input.checked = data[key];
+                    else input.value = data[key];
+                }
             }
+        });
+    }
+
+    function attachInputListeners() {
+        const inputs = mainContainer.querySelectorAll('textarea, input');
+        inputs.forEach(input => {
+            // Debounce save
+            let timeout;
+            input.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    const today = getLocalISODate(state.date);
+                    const key = e.target.dataset.key;
+                    const val = e.target.value;
+
+                    if (e.target.classList.contains('timeline-input')) {
+                        // Aggregate all timeline inputs to save as one 'schedule' object
+                        const schedule = {};
+                        mainContainer.querySelectorAll('.timeline-input').forEach(t => {
+                            if (t.value.trim()) schedule[t.dataset.key] = t.value.trim();
+                        });
+                        await window.db.saveDailyEntry(today, { schedule: schedule });
+                    } else {
+                        await window.db.saveDailyEntry(today, { [key]: val });
+                    }
+                }, 500);
+            });
         });
     }
 
