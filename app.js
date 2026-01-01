@@ -581,9 +581,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function attachWeeklyListeners() {
         const weekNum = getWeekNumber(state.date);
+        const viewContainer = document.querySelector('.weekly-view');
+        if (!viewContainer) return;
 
         // Delegate for simpler handling of dynamic content
-        mainContainer.addEventListener('change', async (e) => {
+        viewContainer.addEventListener('change', async (e) => {
             if (e.target.classList.contains('habit-check')) {
                 const habitIdx = parseInt(e.target.dataset.habit);
                 const dayIdx = parseInt(e.target.dataset.day);
@@ -598,7 +600,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Delete Habit logic (Delegated)
-        mainContainer.addEventListener('click', async (e) => {
+        viewContainer.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-habit-btn')) {
                 const index = parseInt(e.target.dataset.index);
                 if (confirm("Delete this habit?")) {
