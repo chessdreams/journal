@@ -222,10 +222,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const today = getLocalISODate(state.date);
         const weekNum = getWeekNumber(state.date);
 
-        // Fetch data from DB (or fallback to local object if offline/loading logic needed)
-        // For simplicity, we await direct DB call. 
-        // Note: This makes rendering async.
-        const dailyData = await window.db.getDailyEntry(today);
+        // Parallel Data Fetching
+        const [dailyData, weeklyHabits, habitsList] = await Promise.all([
+            window.db.getDailyEntry(today),
+            window.db.getWeeklyHabits(weekNum),
+            window.db.getHabitsList()
+        ]);
 
         // Seed today's targets if missing (Generic Defaults)
         if (!dailyData.target_1 && today === '2026-01-01') {
@@ -249,13 +251,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
 
         let completedCount = 0;
-        // Check completion status (stored as target_1_completed etc in DB)
         if (dailyData.target_1_completed) completedCount++;
         if (dailyData.target_2_completed) completedCount++;
         if (dailyData.target_3_completed) completedCount++;
 
-        const habitScore = calculateHabitScore();
-        const dayStreak = calculateDayStreak();
+        // Calculate Habit Score
+        let habitScore = 0;
+        if (habitsList.length > 0) {
+            let totalPossible = habitsList.length * 7;
+            let completedHabits = 0;
+            // Weekly habits from DB: array of { completed: true, ... }
+            weeklyHabits.forEach(h => {
+                if (h.completed) completedHabits++;
+            });
+            habitScore = Math.round((completedHabits / totalPossible) * 100);
+        }
+
+        // TODO: Streak calculation requires historical daily entries. 
+        // For now, placeholder or needs a new DB query 'getStreak(date)'
+        const dayStreak = 0; // Placeholder until optimizing streak query
 
         mainContainer.innerHTML = `
             <div class="dashboard-view">
@@ -280,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 </div>
 
-                ${renderGoalsProgress(weekNum)}
+                ${renderGoalsProgress(weekNum, habitScore)}
 
                 <div class="card dot-grid" style="margin-top: 24px;">
                     <h3 class="serif italics">Today's Focus</h3>
@@ -1163,9 +1177,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-    function renderGoalsProgress(weekNum) {
-        const habitScore = calculateHabitScore();
-        // Simple progress visual
+    function renderGoalsProgress(weekNum, habitScore) {
+        // Simple progress visual based on Habit Score
         return `
             <div class="card progress-goals-row" style="margin-top: 12px; padding: 16px;">
                  <h3 class="serif italics" style="margin-bottom: 8px;">Weekly Goal Progress</h3>
